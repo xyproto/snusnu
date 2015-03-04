@@ -1,2 +1,3 @@
 # snupibupi
-Testing HTTP/2 and Go
+
+A HTTP/2 server, just for testing and giving it a spin.
