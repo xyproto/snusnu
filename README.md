@@ -8,6 +8,8 @@ Features and limitations
 
 * HTTPS requires the use of certificates. This will make the browser complain about this, unless the certificates are added to the browser.
 * HTTP/2 is still pretty new. There might be bugs.
+* Supports Markdown when displaying files.
+* Does not support subdiretories yet.
 
 
 General information

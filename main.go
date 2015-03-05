@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,9 +10,12 @@ import (
 )
 
 func main() {
+	flag.Parse()
+	fmt.Println(flag.Args())
+
 	mux := http.NewServeMux()
 
-	registerHandlers(mux)
+	registerHandlers(mux, true)
 
 	s := &http.Server{
 		Addr:           ":3000",
