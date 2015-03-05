@@ -14,6 +14,11 @@ Features and limitations
 * Uses UTF-8 whenever possible.
 * Should be pretty fast.
 
+Screenshot
+----------
+
+<img src="https://raw.githubusercontent.com/xyproto/snusnu/master/img/snusnu.png">
+
 Known bugs
 ----------
 
