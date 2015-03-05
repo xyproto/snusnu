@@ -1,4 +1,4 @@
-#SNU SNU [![Build Status](https://travis-ci.org/xyproto/snusnu.svg?branch=master)](https://travis-ci.org/xyproto/snusnu) [![GoDoc](https://godoc.org/github.com/xyproto/snusnu?status.svg)](http://godoc.org/github.com/xyproto/snusnu)
+#SNU SNU [![Build Status](https://travis-ci.org/xyproto/snusnu.svg?branch=master)](https://travis-ci.org/xyproto/snusnu)
 
 Simple HTTP/2 server, for serving the files in the current directory.
 
