@@ -7,7 +7,7 @@ Features and limitations
 ------------------------
 
 * Uses HTTP/2. It's still a new protocol. There might be bugs.
-* If `index.html` or `index.txt` is found, it will be used for the main page.
+* If `index.html`, `index.md` or `index.txt` is found, it will be used for the main page.
 * Supports Markdown when displaying files ending with `.md`.
 * HTTPS requires the use of certificates. This will make the browsers complain, unless the certificates are added to the browser.
 * Only sets Content-Type for a few commonly used filetypes.

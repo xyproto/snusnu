@@ -164,7 +164,7 @@ func serveDir(mux *http.ServeMux, fsroot, urlroot string, filetypes []string) {
 				served = append(served, filename)
 				go serveFile(mux, fsroot, urlroot, urlroot+filename, filename, filetypes)
 				if urlroot == "/" {
-					if (filename == "index.html") || (filename == "index.txt") {
+					if (filename == "index.html") || (filename == "index.md") || (filename == "index.txt") {
 						go serveFile(mux, fsroot, urlroot, urlroot, filename, filetypes)
 						hasIndexHandler = true
 					}
