@@ -11,9 +11,7 @@ import (
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprint(w, "hi")
-	})
+	registerHandlers(mux)
 
 	s := &http.Server{
 		Addr:           ":3000",
