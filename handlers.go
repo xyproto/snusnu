@@ -95,7 +95,7 @@ func registerIndexPage(mux *http.ServeMux, urlpath string, served []string) {
 	}
 	handled = append(handled, urlpath)
 	mux.HandleFunc(urlpath, func(w http.ResponseWriter, req *http.Request) {
-		style := "body { background-color: #101010; text: #c0c0c0; font-family: tahoma,verdana,arial; margin: 3em; font-size: 1.5em; } a { color: #500000; } a:hover { color: #a00000; } a:active { color: #a0a0a0; }"
+		style := "body { background-color: #101010; color: #c0c0c0; font-family: tahoma,verdana,arial; margin: 3em; font-size: 1.5em; } a { color: #500000; } a:hover { color: #a00000; } a:active { color: #a0a0a0; } h1 { color: white; }"
 		fmt.Fprint(w, "<!doctype html><html><head><title>SNU SNU</title><style>"+style+"</style><head><body><h1>SNU SNU</h1>")
 		for _, filename := range served {
 			url := urlpath + filename
