@@ -26,7 +26,7 @@ func main() {
 	// Enable HTTP/2
 	http2.ConfigureServer(s, nil)
 
-	err := s.ListenAndServe()
+	err := s.ListenAndServeTLS("dummycert.pem", "dummykey.pem")
 	if err != nil {
 		fmt.Printf("Server failed: ", err.Error())
 	}
