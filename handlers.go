@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -101,7 +100,6 @@ func noPage(filename string) string {
 
 // Serve all files in the current directory, or only a few select filetypes (html, css, js, png and txt)
 func registerHandlers(mux *http.ServeMux, servedir string) {
-	log.Println("About to serve dir:", servedir)
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		urlpath := req.URL.Path
 		filename := url2filename(servedir, urlpath)

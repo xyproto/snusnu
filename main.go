@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -29,35 +28,40 @@ var (
 func main() {
 	flag.Parse()
 
-	addr := ":3000"
-	cert := "dummycert.pem"
-	key := "dummykey.pem"
+	path := "."
+	addr := ":443"
+	cert := "cert.pem"
+	key := "key.pem"
 
 	// TODO: Use traditional args/flag handling.
 	//       Add support for --help and --version.
 
 	if len(flag.Args()) >= 1 {
-		addr = flag.Args()[0]
+		path = flag.Args()[0]
 	}
 	if len(flag.Args()) >= 2 {
-		cert = flag.Args()[1]
+		addr = flag.Args()[1]
 	}
 	if len(flag.Args()) >= 3 {
-		key = flag.Args()[2]
+		cert = flag.Args()[2]
+	}
+	if len(flag.Args()) >= 4 {
+		key = flag.Args()[3]
 	}
 
 	fmt.Println(version_string)
 	fmt.Println()
 	fmt.Println("HTTP/2 web server for static content")
 	fmt.Println()
-	fmt.Println("[arg 1], server addr\t", addr)
-	fmt.Println("[arg 2], cert file\t", cert)
-	fmt.Println("[arg 3], key file\t", key)
+	fmt.Println("[arg 1] directory\t", path)
+	fmt.Println("[arg 2] server addr\t", addr)
+	fmt.Println("[arg 3] cert file\t", cert)
+	fmt.Println("[arg 4] key file\t", key)
 	fmt.Println()
 
 	mux := http.NewServeMux()
 
-	registerHandlers(mux, ".")
+	registerHandlers(mux, path)
 
 	s := &http.Server{
 		Addr:           addr,
@@ -70,8 +74,7 @@ func main() {
 	// Enable HTTP/2 support
 	http2.ConfigureServer(s, nil)
 
-	log.Println("Ready")
-
+	fmt.Println("Listening...")
 	if err := s.ListenAndServeTLS(cert, key); err != nil {
 		fmt.Printf("Fail: %s\n", err)
 	}
