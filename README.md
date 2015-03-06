@@ -14,20 +14,17 @@ Features and limitations
 * Uses UTF-8 whenever possible.
 * Should be pretty fast.
 
+<!--
 Screenshot
 ----------
 
 <img src="https://raw.githubusercontent.com/xyproto/snusnu/master/img/snusnu.png">
-
-Known bugs
-----------
-
-* Serving files from subdirectories currently does not work as it should.
+-->
 
 General information
 -------------------
 
-* Version: 0.1
+* Version: 0.2
 * License: MIT
 * Alexander F Rødseth
 

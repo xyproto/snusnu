@@ -13,176 +13,106 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-var handled []string
-
-// Check if a string is part of a list
-func has(sl []string, s string) bool {
-	for _, e := range sl {
-		if e == s {
-			return true
-		}
-	}
-	return false
-}
-
-// path can be ""
-func serveFile(mux *http.ServeMux, fsroot, urlroot, urlpath, filename string, serveThese []string) {
-	//log.Println("Registering file handler for " + urlpath)
-	//log.Println("  fsroot:", fsroot)
-	//log.Println("  urlroot:", urlroot)
-	//log.Println("  filename:", filename)
-	if has(handled, urlpath) {
-		//log.Println("Already handled:", urlpath)
-		return
-	}
-	handled = append(handled, urlpath)
-	mux.HandleFunc(urlpath, func(w http.ResponseWriter, req *http.Request) {
-		// Store the filename in the closure
-		file, err := os.Open(fsroot + "/" + filename)
-		defer file.Close()
+// When serving a file. The file must exist. Must be given a full filename.
+func filePage(w http.ResponseWriter, filename string) {
+	// Mimetypes
+	if strings.HasSuffix(filename, ".html") {
+		w.Header().Add("Content-Type", "text/html; charset=utf-8")
+	} else if strings.HasSuffix(filename, ".css") {
+		w.Header().Add("Content-Type", "text/css")
+	} else if strings.HasSuffix(filename, ".js") {
+		w.Header().Add("Content-Type", "application/javascript")
+	} else if strings.HasSuffix(filename, ".txt") {
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	} else if strings.HasSuffix(filename, ".png") {
+		w.Header().Add("Content-Type", "image/png")
+	} else if strings.HasSuffix(filename, ".md") {
+		w.Header().Add("Content-Type", "text/html")
+		b, err := ioutil.ReadFile(filename)
 		if err != nil {
-			fmt.Fprintf(w, "Error opening %s/%s: %s", fsroot, filename, err)
+			fmt.Fprintf(w, "Unable to read %s: %s", filename, err)
 			return
 		}
-
-		fi, err := file.Stat()
-		if err != nil {
-			fmt.Fprintf(w, "Error running stat on %s/%s: %s", fsroot, filename, err)
-			return
-		}
-		if fi.IsDir() {
-			// Serve the entire directory
-			dirname := fsroot + "/" + filename
-			urlpath := urlroot + filename + "/"
-			serveDir(mux, dirname, urlpath, serveThese)
-			return
-		}
-
-		// Mimetypes
-		if strings.HasSuffix(filename, ".html") {
-			w.Header().Add("Content-Type", "text/html; charset=utf-8")
-		} else if strings.HasSuffix(filename, ".css") {
-			w.Header().Add("Content-Type", "text/css")
-		} else if strings.HasSuffix(filename, ".js") {
-			w.Header().Add("Content-Type", "application/javascript")
-		} else if strings.HasSuffix(filename, ".txt") {
-			w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		} else if strings.HasSuffix(filename, ".png") {
-			w.Header().Add("Content-Type", "image/png")
-		} else if strings.HasSuffix(filename, ".md") {
-			w.Header().Add("Content-Type", "text/html")
-			b, err := ioutil.ReadAll(file)
-			if err != nil {
-				fmt.Fprintf(w, "Unable to read %s: %s", filename, err)
-				return
-			}
-			// Write to the ResponseWriter, from the Markdown converter
-			io.Copy(w, bytes.NewBuffer(blackfriday.MarkdownCommon(b)))
-			return
-		}
-		// Write to the ResponseWriter, from the File
-		io.Copy(w, file)
-	})
-
-}
-
-func registerIndexPage(mux *http.ServeMux, urlpath string, served []string) {
-	//log.Println("Registering generated index page for " + urlpath)
-	//log.Println("  For these files:", served)
-	if has(handled, urlpath) {
-		//log.Println("Already handled:", urlpath)
+		markdownBody := string(blackfriday.MarkdownCommon(b))
+		fmt.Fprint(w, markdownPage(filename, markdownBody))
 		return
 	}
-	handled = append(handled, urlpath)
-	mux.HandleFunc(urlpath, func(w http.ResponseWriter, req *http.Request) {
-		style := "body { background-color: #101010; color: #c0c0c0; font-family: tahoma,verdana,arial; margin: 3em; font-size: 1.5em; } a { color: #500000; } a:hover { color: #a00000; } a:active { color: #a0a0a0; } h1 { color: white; }"
-		fmt.Fprint(w, "<!doctype html><html><head><title>SNU SNU</title><style>"+style+"</style><head><body><h1>SNU SNU</h1>")
-		for _, filename := range served {
-			url := urlpath + filename
-			fmt.Fprint(w, "<a href=\""+url+"\">"+filename+"</a><br>")
-		}
-		fmt.Fprint(w, "<body></html>")
-	})
-}
-
-// Check if a filename that can already be opened is a directory
-func directory(full_filename string) bool {
-	fs, _ := os.Stat(full_filename)
-	return fs.IsDir()
-}
-
-func serveDirWhenNeeded(mux *http.ServeMux, urlroot, fsroot, filename string, filetypes []string) {
-	urlpath := urlroot + filename + "/"
-	//log.Println("Serving directory when needed:", urlpath, urlroot, fsroot, filename)
-	if has(handled, urlpath) {
-		//log.Println("Already handled:", urlpath)
-		return
-	}
-	handled = append(handled, urlpath)
-	mux.HandleFunc(urlpath, func(w http.ResponseWriter, req *http.Request) {
-		// Serve the entire directory
-		fulldirname := fsroot + "/" + filename
-		urlpath := urlroot + filename + "/"
-		serveDir(mux, fulldirname, urlpath, filetypes)
-	})
-}
-
-func serveDir(mux *http.ServeMux, fsroot, urlroot string, filetypes []string) {
-	//log.Println("Registering dir handler for " + urlroot)
-	//log.Println("  fsroot:", fsroot)
-	//log.Println("  urlroot:", urlroot)
-
-	hasIndexHandler := false
-	dir, err := os.Open(fsroot)
+	// Write to the ResponseWriter, from the File
+	file, err := os.Open(filename)
+	defer file.Close()
 	if err != nil {
-		log.Fatalf("Could not open directory: %s (%s)", fsroot, err)
-		return
+		fmt.Fprintf(w, "Can't open %s: %s", filename, err)
 	}
-	filenames, err := dir.Readdirnames(-1)
-	if err != nil {
-		log.Fatalf("Could not read filenames from directory: %s (%s)", fsroot, err)
-	}
-	served := []string{}
-	for _, filename := range filenames {
-		serve := false
-		if len(filetypes) == 0 {
-			serve = true
-		} else {
-			// Check if the given filetype/extension should be served
-			for _, filetype := range filetypes {
-				if strings.HasSuffix(filename, "."+filetype) {
-					serve = true
-					break
-				}
-			}
+	// Serve the file
+	io.Copy(w, file)
+	return
+}
+
+// Directory listing
+func directoryListing(w http.ResponseWriter, dirname string) {
+	var buf bytes.Buffer
+	sep := string(os.PathSeparator)
+	for _, filename := range getFilenames(dirname) {
+
+		// Find the full name
+		full_filename := dirname
+		if !strings.HasSuffix(full_filename, sep) {
+			full_filename += sep
 		}
-		if serve {
-			if directory(fsroot + "/" + filename) {
-				served = append(served, filename+"/")
-				go serveDirWhenNeeded(mux, urlroot, fsroot, filename, filetypes)
-			} else {
-				served = append(served, filename)
-				go serveFile(mux, fsroot, urlroot, urlroot+filename, filename, filetypes)
-				if urlroot == "/" {
-					if (filename == "index.html") || (filename == "index.md") || (filename == "index.txt") {
-						go serveFile(mux, fsroot, urlroot, urlroot, filename, filetypes)
-						hasIndexHandler = true
-					}
-				}
-			}
+		full_filename += filename
+
+		// Output different entries for files and directories
+		buf.WriteString(easyLink(filename, full_filename, isDir(full_filename)))
+	}
+	title := dirname
+	// Strip the leading "./"
+	if strings.HasPrefix(title, "./") {
+		title = title[2:]
+	}
+	// Use the application title for the main page
+	//if title == "" {
+	//	title = version_string
+	//}
+	if buf.Len() > 0 {
+		fmt.Fprint(w, easyPage(title, buf.String()))
+	} else {
+		fmt.Fprint(w, easyPage(title, "Empty directory"))
+	}
+}
+
+// When serving a directory. The directory must exist. Must be given a full filename.
+func dirPage(w http.ResponseWriter, dirname string) {
+	// Handle the serving of index files, if needed
+	for _, indexfile := range indexFilenames {
+		filename := dirname + string(os.PathSeparator) + indexfile
+		if exists(filename) {
+			filePage(w, filename)
+			return
 		}
 	}
-	if !hasIndexHandler {
-		// If no index.html is found, create a nice webpage for showing all the files
-		go registerIndexPage(mux, urlroot, served)
-	}
+	// Serve a directory listing of no index file is found
+	directoryListing(w, dirname)
+}
+
+// When a file is not found
+func noPage(filename string) string {
+	return easyPage("Not found", "File not found: "+filename)
 }
 
 // Serve all files in the current directory, or only a few select filetypes (html, css, js, png and txt)
-func registerHandlers(mux *http.ServeMux, allFiles bool) {
-	var serveThese []string
-	if !allFiles {
-		serveThese = []string{"html", "css", "js", "png", "txt", "md"}
-	}
-	serveDir(mux, ".", "/", serveThese)
+func registerHandlers(mux *http.ServeMux, servedir string) {
+	log.Println("About to serve dir:", servedir)
+	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		urlpath := req.URL.Path
+		filename := url2filename(servedir, urlpath)
+		if !exists(filename) {
+			fmt.Fprint(w, noPage(filename))
+			return
+		}
+		if isDir(filename) {
+			dirPage(w, filename)
+			return
+		}
+		filePage(w, filename)
+	})
 }
