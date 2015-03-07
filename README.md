@@ -28,7 +28,7 @@ Share the current directory as https://localhost:3000/
 
 `snusnu . :3000`
 
-Share a single file as the main page at https://localhost/ (will attempt to listen to port 443, may need a dedicated user or more permissions).
+Share a single file as the main page at https://localhost/. This will make snusnu listen to port 443, which may need more permissions. Run as root or a dedicated user (recommended).
 
 `./snusnu README.md`
 
