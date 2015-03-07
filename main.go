@@ -9,7 +9,7 @@ import (
 	"github.com/bradfitz/http2"
 )
 
-const version_string = "SNU-SNU 0.2"
+const version_string = "snusnu 0.3"
 
 var (
 	// The font that will be used

@@ -103,14 +103,23 @@ func registerHandlers(mux *http.ServeMux, servedir string) {
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		urlpath := req.URL.Path
 		filename := url2filename(servedir, urlpath)
-		if !exists(filename) {
-			fmt.Fprint(w, noPage(filename))
-			return
+		// Remove the trailing slash from the filename, if any
+		noslash := filename
+		if strings.HasSuffix(filename, "/") {
+			noslash = filename[:len(filename)-1]
 		}
-		if isDir(filename) {
+		hasdir := exists(filename) && isDir(filename)
+		hasfile := exists(noslash)
+		// Share the directory or file
+		if hasdir {
 			dirPage(w, filename)
 			return
+		} else if !hasdir && hasfile {
+			// Share a single file instead of a directory
+			filePage(w, noslash)
+			return
 		}
-		filePage(w, filename)
+		// Not found
+		fmt.Fprint(w, noPage(filename))
 	})
 }
