@@ -17,7 +17,7 @@ Features and limitations
 Usage
 -----
 
-`snusnu [directory] [host:port] [cert] [key]`
+`snusnu [directory] [host:port] [certfile] [keyfile]`
 
 `host:port` can be just `:port` for localhost.
 
