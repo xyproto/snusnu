@@ -2,6 +2,8 @@
 
 Simple HTTP/2 server, for serving the files in a given directory.
 
+**DEPRECATED!** I would rather recommend [Algernon](https://github.com/xyproto/algernon).
+
 
 Features and limitations
 ------------------------
